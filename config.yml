@@ -1,0 +1,51 @@
+# ===== TripleCrates =====
+# true  = la clé doit être dans la main principale ; false = n'importe où dans l'inventaire
+key-in-hand: true
+
+# Hologramme au-dessus de chaque coffre. Placeholders : <name> <rarity> <chance>
+hologram:
+  lines:
+    - "<name>"
+    - "<rarity>"
+  text-height: 1.55
+  item-height: 2.4
+  item-scale: 1.4
+
+# Valeurs par défaut des animations (chaque caisse peut les surcharger via /crates editor)
+default-animation:
+  explosion-particle: explosion_emitter
+  explosion-sound: entity.generic.explode
+  trail-particle: cloud
+  land-particle: poof
+  land-sound: block.anvil.land
+  win-particle: totem_of_undying
+  win-sound: entity.player.levelup
+  start-delay: 14        # ticks entre l'explosion de la caisse et la chute des coffres
+  fall-height: 14        # blocs
+  fall-ticks: 28         # durée de la chute
+  distance: 3.0          # distance devant le joueur
+  spacing: 2.4           # écart entre les coffres
+  choose-timeout: 30     # secondes (au bout, un coffre est choisi au hasard)
+  end-delay: 40          # ticks avant disparition après le choix
+  chest-item: CHEST      # item affiché pour les coffres (ex: nexo:mon_coffre)
+  chest-model-type: NONE # NONE | MYTHICMOBS | MODELENGINE
+  chest-model-id: ""
+
+# Interface de prévisualisation (clic gauche sur la caisse)
+preview:
+  default-title: "<dark_gray>Récompenses • %crate%"
+  default-rows: 5
+  default-filler: BLACK_STAINED_GLASS_PANE
+  lore:
+    rarity: "<gray>Rareté : <rarity>"
+    chance: "<gray>Chance : <yellow><chance>%"
+  items:      # item peut être un matériau ou nexo:<id>
+    prev:
+      item: ARROW
+      name: "<yellow>« Page précédente"
+    next:
+      item: ARROW
+      name: "<yellow>Page suivante »"
+    close:
+      item: BARRIER
+      name: "<red>Fermer"

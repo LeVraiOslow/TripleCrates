@@ -1,0 +1,6 @@
+# id: nom affiché (MiniMessage). Modifiable aussi via /crates editor
+rarities:
+  common: "<gray>Commun"
+  rare: "<aqua>Rare"
+  epic: "<light_purple>Épique"
+  legendary: "<gold><bold>Légendaire"

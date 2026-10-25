@@ -1,0 +1,18 @@
+name: TripleCrates
+version: ${version}
+main: fr.triplecrates.TripleCratesPlugin
+api-version: '26.2'
+description: Caisses à 3 coffres (choix de la récompense), éditeur en jeu, compatible Nexo / MythicMobs / ModelEngine
+softdepend: [Nexo, MythicMobs, ModelEngine]
+commands:
+  crates:
+    description: Commande principale de TripleCrates
+    aliases: [crate, tcrates]
+    usage: /crates <editor|give|givekey|open|preview|list|reload>
+permissions:
+  triplecrates.admin:
+    description: Administration (éditeur, give, reload, poser/casser des caisses)
+    default: op
+  triplecrates.use:
+    description: Ouvrir et prévisualiser les caisses
+    default: true

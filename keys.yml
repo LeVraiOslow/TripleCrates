@@ -1,0 +1,9 @@
+keys:
+  example_key:
+    item: TRIPWIRE_HOOK     # matériau, nexo:<id>
+    name: "<yellow>Clé d'exemple"
+    lore:
+      - "<gray>Fais un clic droit sur la caisse"
+      - "<gray>Rareté : %rarity%"
+    rarity: "<aqua>Rare"
+    glow: true

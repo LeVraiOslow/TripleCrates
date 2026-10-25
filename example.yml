@@ -1,0 +1,49 @@
+name: "<gold><bold>Caisse d'exemple"
+description:
+  - "<gray>3 coffres tombent du ciel,"
+  - "<gray>tu choisis ta récompense !"
+block: CHEST
+key: example_key
+model:            # type : NONE | MYTHICMOBS | MODELENGINE
+  type: NONE
+  id: ""
+  y-offset: 0.0
+  hitbox-width: 1.0
+  hitbox-height: 1.2
+animation: {}     # vide = valeurs de config.yml (default-animation)
+preview:
+  title: "<dark_gray>Récompenses • %crate%"
+  rows: 5
+  filler: BLACK_STAINED_GLASS_PANE
+  show-chance: true
+  show-rarity: true
+rewards:
+  diamants:
+    type: ITEM
+    item: DIAMOND
+    amount: 3
+    rarity: rare
+    weight: 20
+  fer:
+    type: ITEM
+    item: IRON_INGOT
+    amount: 16
+    rarity: common
+    weight: 60
+  pomme:
+    type: ITEM
+    item: ENCHANTED_GOLDEN_APPLE
+    amount: 1
+    rarity: epic
+    weight: 8
+  monnaie:
+    type: COMMAND            # item = icône ; la commande est exécutée (console par défaut)
+    item: GOLD_INGOT
+    name: "<yellow>500 $"
+    lore:
+      - "<gray>Ajoutés à ton solde"
+    rarity: legendary
+    weight: 2
+    commands:
+      - "eco give %player% 500"   # préfixes : [player] [console]
+    broadcast: true
