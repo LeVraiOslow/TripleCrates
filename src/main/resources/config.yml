@@ -43,7 +43,9 @@ default-animation:
   fall-ticks: 16         # durée de la chute (accélération : "attirés" vers le sol)
   bounce-height: 0.45    # hauteur du premier rebond (0 = pas de rebond)
   side-turn: 0.5         # coffres gauche/droite tournés vers le joueur : 0 = parallèles, 1 = pile face à lui
-  chest-yaw-offset: 0    # mettre 180 si les coffres montrent leur dos au joueur
+  chest-yaw-offset: 0    # rotation des coffres : 90, -90 ou 180 si le modèle est tourné dans le mauvais sens
+  chest-offset-right: 0  # décale les coffres vers la DROITE du joueur (négatif = gauche), si le modèle n'est pas centré
+  chest-offset-forward: 0  # décale les coffres vers l'avant (négatif = vers le joueur)
   # --- 3) machine à sous
   spin-ticks: 50         # durée du défilement du 1er coffre
   spin-stagger: 14       # ticks de plus pour chaque coffre suivant (ils s'arrêtent l'un après l'autre)
