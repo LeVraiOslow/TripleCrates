@@ -31,6 +31,7 @@ import java.util.UUID;
 public final class CrateListener implements Listener {
     private final TripleCratesPlugin pl;
     private final Map<UUID, Long> lastClick = new HashMap<>();
+    private final Map<UUID, Long> openedAt = new HashMap<>();
 
     public CrateListener(TripleCratesPlugin pl) { this.pl = pl; }
 
@@ -102,7 +103,13 @@ public final class CrateListener implements Listener {
     // ---------- ouverture ----------
     private void open(Player p, Crate c, String locKey) {
         if (!p.hasPermission("triplecrates.use")) { Text.send(p, "no-permission"); return; }
-        if (OpenSession.ACTIVE.containsKey(p.getUniqueId())) { Text.send(p, "already-opening"); return; }
+        if (OpenSession.ACTIVE.containsKey(p.getUniqueId())) {
+            // Un seul clic droit déclenche deux événements (bloc + hitbox du modèle) : le 2e arrive juste après le
+            // début de l'ouverture et ne doit pas afficher de message. Seul un vrai 2e clic plus tard en affiche un.
+            Long t0 = openedAt.get(p.getUniqueId());
+            if (t0 == null || System.currentTimeMillis() - t0 > 500) Text.send(p, "already-opening");
+            return;
+        }
         if (OpenSession.BUSY.contains(locKey)) { Text.send(p, "busy"); return; }
         if (c.rewards.isEmpty()) { Text.send(p, "empty-crate"); return; }
         CrateKey key = c.keyId == null ? null : pl.crates().keys.get(c.keyId);
@@ -117,6 +124,7 @@ public final class CrateListener implements Listener {
 
         Location bl = CrateManager.parseLoc(locKey);
         if (bl == null) return;
+        openedAt.put(p.getUniqueId(), System.currentTimeMillis());
         new OpenSession(pl, p, c, locKey, bl).begin();
     }
 
@@ -171,6 +179,7 @@ public final class CrateListener implements Listener {
         OpenSession s = OpenSession.ACTIVE.get(e.getPlayer().getUniqueId());
         if (s != null) s.forceFinish();
         lastClick.remove(e.getPlayer().getUniqueId());
+        openedAt.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler

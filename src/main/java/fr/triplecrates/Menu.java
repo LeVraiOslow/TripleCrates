@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 public final class Menu implements InventoryHolder {
     private final Inventory inv;
     private final Map<Integer, Consumer<InventoryClickEvent>> actions = new HashMap<>();
+    private boolean allowBottom;
 
     public Menu(Component title, int rows) { inv = Bukkit.createInventory(this, rows * 9, title); }
 
@@ -33,6 +34,10 @@ public final class Menu implements InventoryHolder {
         for (int i = from; i < toExcl; i++) inv.setItem(i, it);
         return this;
     }
+
+    /** Autorise le joueur à prendre un item dans son propre inventaire (pour le déposer sur un slot du menu). */
+    public Menu allowBottom(boolean b) { this.allowBottom = b; return this; }
+    public boolean allowsBottom() { return allowBottom; }
 
     public Consumer<InventoryClickEvent> action(int slot) { return actions.get(slot); }
     public void open(Player p) { p.openInventory(inv); }

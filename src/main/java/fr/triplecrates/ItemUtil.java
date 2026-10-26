@@ -1,6 +1,7 @@
 package fr.triplecrates;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -63,6 +64,21 @@ public final class ItemUtil {
         meta.lore(l);
         c.setItemMeta(meta);
         return c;
+    }
+
+    /** Applique un item_model (ex: monpack:cles/or) et/ou un custom_model_data (nombre ou texte) à un item. */
+    public static void applyModel(ItemMeta m, String itemModel, String customModelData) {
+        if (itemModel != null && !itemModel.isBlank()) {
+            NamespacedKey k = NamespacedKey.fromString(itemModel.trim().toLowerCase());
+            if (k != null) m.setItemModel(k);
+        }
+        if (customModelData != null && !customModelData.isBlank()) {
+            var c = m.getCustomModelDataComponent();
+            String v = customModelData.trim();
+            try { c.setFloats(List.of(Float.parseFloat(v))); c.setStrings(List.of()); }
+            catch (NumberFormatException ex) { c.setStrings(List.of(v)); c.setFloats(List.of()); }
+            m.setCustomModelDataComponent(c);
+        }
     }
 
     /** item / name / lore / amount / glow / hide-tooltip depuis une section de config (item : matériau, nexo:<id>, base64:...). */

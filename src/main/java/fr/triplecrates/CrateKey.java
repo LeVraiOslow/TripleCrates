@@ -15,6 +15,8 @@ public final class CrateKey {
     public List<String> lore = new ArrayList<>();
     public String rarity = "<gray>Commune";
     public boolean glow = true;
+    public String itemModel;          // item_model (ex: monpack:cles/or), null = celui de l'item
+    public String customModelData;    // nombre ou texte, null = aucun
 
     public CrateKey(String id) { this.id = id; this.name = "<yellow>Clé " + id; }
 
@@ -25,6 +27,8 @@ public final class CrateKey {
         k.lore = new ArrayList<>(s.getStringList("lore"));
         k.rarity = s.getString("rarity", k.rarity);
         k.glow = s.getBoolean("glow", true);
+        k.itemModel = s.getString("item-model");
+        k.customModelData = s.getString("custom-model-data");
         return k;
     }
 
@@ -34,6 +38,8 @@ public final class CrateKey {
         s.set("lore", lore);
         s.set("rarity", rarity);
         s.set("glow", glow);
+        s.set("item-model", itemModel);
+        s.set("custom-model-data", customModelData);
     }
 
     public ItemStack build(int amount) {
@@ -42,6 +48,7 @@ public final class CrateKey {
         m.displayName(Text.item(name));
         m.lore(lore.stream().map(l -> Text.item(l.replace("%rarity%", rarity))).toList());
         if (glow) m.setEnchantmentGlintOverride(true);
+        ItemUtil.applyModel(m, itemModel, customModelData);
         m.getPersistentDataContainer().set(TripleCratesPlugin.get().K_KEY, PersistentDataType.STRING, id);
         it.setItemMeta(m);
         return it;

@@ -53,8 +53,15 @@ public final class Editor {
     private ItemStack glass() { return ItemUtil.icon(Material.GRAY_STAINED_GLASS_PANE, " "); }
     private ItemStack ic(Material m, String name, String... lore) { return ItemUtil.icon(m, name, lore); }
     private Menu menu(String key, String def, int rows, String id) {
-        return new Menu(Text.parse(Text.gui(key, def).replace("%id%", id)), rows);
+        return new Menu(Text.parse(Text.gui(key, def).replace("%id%", id)), rows).allowBottom(true);
     }
+    /** Item "déposé" : celui tenu au curseur (pris dans l'inventaire) sinon celui en main. */
+    private ItemStack held(Player p) {
+        ItemStack c = MenuListener.CURSOR.remove(p.getUniqueId());
+        if (c != null && !c.isEmpty()) return c;
+        return p.getInventory().getItemInMainHand();
+    }
+
     private void save(Crate c) { cm().saveCrate(c); }
     private void back(Menu m, int slot, Runnable r) { m.set(slot, ic(Material.ARROW, "<yellow>« Retour"), e -> r.run()); }
     private boolean prompt(ClickType t) { return t.isShiftClick() || t == ClickType.DROP; }
@@ -140,7 +147,7 @@ public final class Editor {
         m.set(12, ic(mat(c.block), "<yellow>Bloc de la caisse", "<gray>Actuel : <white>" + c.block.name(), "",
                         "<yellow>Clic <gray>: utiliser le bloc en main", "<gray>(main vide = saisir le nom)"),
                 e -> {
-                    ItemStack h = p.getInventory().getItemInMainHand();
+                    ItemStack h = held(p);
                     if (!h.isEmpty() && h.getType().isBlock()) { c.block = h.getType(); save(c); crateMenu(p, c); return; }
                     Prompt.ask(p, "Nom du bloc (CHEST, BARREL, BARRIER...)", s -> {
                         Material mm = Material.matchMaterial(s.trim());
@@ -267,7 +274,7 @@ public final class Editor {
                 setAnim(p, c, s.key(), clamp(v, s));
             }
             case "I" -> {
-                ItemStack h = p.getInventory().getItemInMainHand();
+                ItemStack h = held(p);
                 if (!h.isEmpty()) { setAnim(p, c, s.key(), ItemUtil.encode(h)); return; }
                 Prompt.ask(p, "Item des coffres (CHEST, nexo:mon_coffre...)", v -> {
                     if (ItemUtil.resolve(v) == null) { Text.send(p, "invalid-item"); animMenu(p, c); } else setAnim(p, c, s.key(), v.trim());
@@ -297,7 +304,7 @@ public final class Editor {
         });
         m.set(12, ic(Material.GRAY_STAINED_GLASS_PANE, "<yellow>Item de remplissage", "<gray>Actuel : <white>" + c.previewFiller, "",
                 "<yellow>Clic <gray>: item en main (ou saisir, nexo:id ok)"), e -> {
-            ItemStack h = p.getInventory().getItemInMainHand();
+            ItemStack h = held(p);
             if (!h.isEmpty()) { c.previewFiller = ItemUtil.encode(h); save(c); previewSettings(p, c); return; }
             Prompt.ask(p, "Item de remplissage", s -> {
                 if (ItemUtil.resolve(s) == null) Text.send(p, "invalid-item"); else { c.previewFiller = s.trim(); save(c); }
@@ -325,9 +332,10 @@ public final class Editor {
             else rewardMenu(p, c, r);
         }, pg -> rewardList(p, c, pg));
         back(m, 49, () -> crateMenu(p, c));
-        m.set(50, ic(Material.EMERALD, "<green>+ Ajouter une récompense", "<gray>Tiens l'item en main (outil, item Nexo, item custom...)",
-                "<gray>puis clique. Main vide = saisir un matériau / nexo:id"), e -> {
-            ItemStack h = p.getInventory().getItemInMainHand();
+        m.set(50, ic(Material.EMERALD, "<green>+ Ajouter une récompense", "<yellow>Prends un item dans ton inventaire <gray>(clic), puis",
+                "<gray>clique ici avec : il devient la récompense.",
+                "<gray>(ou tiens-le en main ; rien = saisir un matériau / nexo:id)"), e -> {
+            ItemStack h = held(p);
             if (!h.isEmpty()) {
                 Reward r = newReward(c);
                 r.item = ItemUtil.encode(h);
@@ -362,9 +370,9 @@ public final class Editor {
         m.fill(glass());
         Runnable again = () -> { save(c); rewardMenu(p, c, r); };
 
-        m.set(10, ItemUtil.withLore(r.displayItem(), "", "<yellow>Clic <gray>: remplacer par l'item en main",
-                "<gray>(main vide = saisir un matériau / nexo:id)"), e -> {
-            ItemStack h = p.getInventory().getItemInMainHand();
+        m.set(10, ItemUtil.withLore(r.displayItem(), "", "<yellow>Clic avec un item au curseur <gray>: le remplacer",
+                "<gray>(prends-le dans ton inventaire, ou tiens-le en main ;", "<gray>rien = saisir un matériau / nexo:id)"), e -> {
+            ItemStack h = held(p);
             if (!h.isEmpty()) { r.item = ItemUtil.encode(h); r.amount = h.getAmount(); again.run(); return; }
             Prompt.ask(p, "Item (ex: DIAMOND, nexo:rubis)", s -> {
                 if (ItemUtil.resolve(s) == null) Text.send(p, "invalid-item"); else r.item = s.trim();
@@ -461,8 +469,9 @@ public final class Editor {
         m.fill(glass());
         Runnable again = () -> { cm().saveKeys(); keyMenu(p, k); };
 
-        m.set(10, ItemUtil.withLore(k.build(1), "", "<yellow>Clic <gray>: utiliser l'item en main comme base", "<gray>(item Nexo ok ; main vide = saisir)"), e -> {
-            ItemStack h = p.getInventory().getItemInMainHand();
+        m.set(10, ItemUtil.withLore(k.build(1), "", "<yellow>Clic avec un item au curseur <gray>: l'utiliser comme base",
+                "<gray>(prends-le dans ton inventaire, ou tiens-le en main ;", "<gray>item Nexo ok ; rien = saisir)"), e -> {
+            ItemStack h = held(p);
             if (!h.isEmpty()) { k.item = ItemUtil.encode(h); again.run(); return; }
             Prompt.ask(p, "Item de la clé (ex: TRIPWIRE_HOOK, nexo:cle_rare)", s -> {
                 if (ItemUtil.resolve(s) == null) Text.send(p, "invalid-item"); else k.item = s.trim();
@@ -476,6 +485,33 @@ public final class Editor {
         m.set(13, ic(Material.AMETHYST_SHARD, "<yellow>Rareté de la clé", "<gray>Actuelle : <reset>" + k.rarity, "", "<yellow>Clic <gray>: modifier"),
                 e -> Prompt.ask(p, "Rareté affichée de la clé (MiniMessage)", s -> { k.rarity = s; again.run(); }));
         m.set(14, ic(Material.ENCHANTED_BOOK, "<yellow>Brillance", "<gray>État : " + (k.glow ? "<green>oui" : "<red>non")), e -> { k.glow = !k.glow; again.run(); });
+        m.set(19, ic(Material.PAINTING, "<yellow>Modèle d'item (item_model)",
+                "<gray>Actuel : <white>" + (k.itemModel == null ? "(celui de l'item)" : k.itemModel), "",
+                "<yellow>Clic <gray>: saisir (ex: monpack:cles/or)",
+                "<yellow>Clic avec un item au curseur <gray>: copier son modèle",
+                "<yellow>Clic droit <gray>: retirer"), e -> {
+            if (e.getClick().isRightClick()) { k.itemModel = null; again.run(); return; }
+            ItemStack h = held(p);
+            if (!h.isEmpty() && h.hasItemMeta() && h.getItemMeta().hasItemModel()) { k.itemModel = h.getItemMeta().getItemModel().toString(); again.run(); return; }
+            Prompt.ask(p, "Modèle d'item (ex: monpack:cles/or)", s -> {
+                if (org.bukkit.NamespacedKey.fromString(s.trim().toLowerCase()) == null) Text.send(p, "invalid-id"); else k.itemModel = s.trim().toLowerCase();
+                again.run();
+            });
+        });
+        m.set(20, ic(Material.ITEM_FRAME, "<yellow>Custom model data",
+                "<gray>Actuel : <white>" + (k.customModelData == null ? "(aucun)" : k.customModelData), "",
+                "<yellow>Clic <gray>: saisir (nombre ou texte)",
+                "<yellow>Clic avec un item au curseur <gray>: copier son modèle",
+                "<yellow>Clic droit <gray>: retirer"), e -> {
+            if (e.getClick().isRightClick()) { k.customModelData = null; again.run(); return; }
+            ItemStack h = held(p);
+            if (!h.isEmpty() && h.hasItemMeta() && h.getItemMeta().hasCustomModelDataComponent()) {
+                var c = h.getItemMeta().getCustomModelDataComponent();
+                if (!c.getStrings().isEmpty()) { k.customModelData = c.getStrings().get(0); again.run(); return; }
+                if (!c.getFloats().isEmpty()) { k.customModelData = Text.num(c.getFloats().get(0)); again.run(); return; }
+            }
+            Prompt.ask(p, "Custom model data (nombre, ex: 1001, ou texte)", s -> { k.customModelData = s.trim(); again.run(); });
+        });
         m.set(15, ic(Material.CHEST, "<yellow>Caisses liées", "<gray>Choisir les caisses ouvertes par cette clé", "", "<yellow>Clic <gray>: gérer"), e -> keyLinks(p, k, 0));
         m.set(16, ic(Material.EMERALD, "<green>Recevoir la clé"), e -> p.getInventory().addItem(k.build(1)).values().forEach(o -> p.getWorld().dropItemNaturally(p.getLocation(), o)));
         m.set(31, ic(Material.BARRIER, "<red>Supprimer la clé", "<red>Shift + clic <gray>pour confirmer"), e -> {
