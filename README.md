@@ -45,6 +45,13 @@ Chaque entrée de `items` : `slot` ou `slots`, `item` (matériau, `nexo:<id>`, `
 `commands` (pour `command` ; `%player%`, préfixes `[player]` par défaut, `[console]`, `[close]`),
 `show` (`always`, `has-next`, `has-prev`). Un exemple commenté se trouve dans `crates/example.yml`.
 
+## Caisse avec modèle 3D (ModelEngine / MythicMobs)
+- Une fois le modèle appliqué, le bloc vanilla de la caisse (coffre...) est remplacé par une **barrière** invisible
+  (solide et cliquable) : seul le modèle se voit. Si le modèle n'a pas pu être appliqué, le bloc reste visible.
+  Si tu retires le modèle de la caisse, le bloc d'origine revient.
+- Pour retirer une caisse à modèle : Shift + casser la barrière en **créatif** (la barrière est incassable en survie).
+- Le modèle ne prend jamais de dégâts (pas de teinte rouge au clic gauche / aperçu).
+
 ## Compilation
 Prérequis : JDK 25 + Gradle.
     gradle build
