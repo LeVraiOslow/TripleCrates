@@ -21,6 +21,7 @@ public final class ModelVisual {
     private ItemDisplay display;
     private Entity extra;
     private double yOffset;
+    private boolean modelOk;
 
     public static ModelVisual spawn(Location loc, Hooks.ModelSpec model, ItemStack chestItem, NamespacedKey tagKey, String tagVal, Player onlyFor) {
         TripleCratesPlugin plugin = TripleCratesPlugin.get();
@@ -40,7 +41,7 @@ public final class ModelVisual {
             v.yOffset = model.yOffset;
             Location ml = loc.clone().add(0, model.yOffset, 0);
             if (model.type.equalsIgnoreCase("MODELENGINE")) {
-                Hooks.attachModelEngine(v.hitbox, model.id);
+                v.modelOk = Hooks.attachModelEngine(v.hitbox, model.id);
             } else if (model.type.equalsIgnoreCase("MYTHICMOBS")) {
                 Entity e = Hooks.spawnMythic(model.id, ml);
                 if (e != null) {
@@ -50,13 +51,17 @@ public final class ModelVisual {
                     e.getPersistentDataContainer().set(tagKey, PersistentDataType.STRING, tagVal);
                     if (onlyFor != null) { e.setVisibleByDefault(false); onlyFor.showEntity(plugin, e); }
                     v.extra = e;
+                    v.modelOk = true;
                 }
             }
-            if (onlyFor != null) {
-                v.restrictTo(onlyFor);
-                // MythicMobs peut appliquer son modèle avec un léger délai : on re-applique juste après
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> { if (v.valid()) v.restrictTo(onlyFor); }, 2L);
-            }
+            if (onlyFor != null) v.restrictTo(onlyFor);
+            // MythicMobs peut appliquer son modèle avec un léger délai : on re-applique juste après
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                if (!v.valid()) return;
+                Hooks.lockModel(v.hitbox);
+                Hooks.lockModel(v.extra);
+                if (onlyFor != null) v.restrictTo(onlyFor);
+            }, 2L);
         } else if (chestItem != null) {
             v.display = w.spawn(loc, ItemDisplay.class, d -> {
                 d.setItemStack(chestItem);
@@ -96,6 +101,9 @@ public final class ModelVisual {
     }
 
     public boolean valid() { return hitbox != null && hitbox.isValid(); }
+
+    /** Le modèle 3D a bien été appliqué. */
+    public boolean hasModel() { return modelOk; }
 
     public boolean owns(Entity e) {
         return e != null && ((hitbox != null && e.getUniqueId().equals(hitbox.getUniqueId()))

@@ -54,6 +54,8 @@ public final class TripleCratesPlugin extends JavaPlugin {
         cmd.setTabCompleter(ex);
 
         getServer().getScheduler().runTask(this, () -> crates.ensureAllVisuals());
+        // ModelEngine charge ses modèles un peu après le démarrage : on réessaie les caisses dont le modèle n'a pas pu être appliqué
+        getServer().getScheduler().runTaskLater(this, () -> crates.ensureAllVisuals(), 200L);
         getLogger().info("Nexo=" + Hooks.nexo + " MythicMobs=" + Hooks.mythic + " ModelEngine=" + Hooks.modelEngine);
     }
 

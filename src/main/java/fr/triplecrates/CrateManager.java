@@ -143,13 +143,32 @@ public final class CrateManager {
 
     public void ensureVisual(String key) {
         Crate c = crateAtKey(key);
-        if (c == null || !c.model.active()) return;
+        if (c == null) return;
+        Location bl = parseLoc(key);
+        if (bl == null || !bl.getWorld().isChunkLoaded(bl.getBlockX() >> 4, bl.getBlockZ() >> 4)) return;
+        if (!c.model.active()) { restoreBlock(bl, c); return; }
         ModelVisual v = visuals.get(key);
-        if (v != null && v.valid()) return;
-        Location l = parseLoc(key);
-        if (l == null || !l.getWorld().isChunkLoaded(l.getBlockX() >> 4, l.getBlockZ() >> 4)) return;
-        l.add(0.5, 0, 0.5);
-        visuals.put(key, ModelVisual.spawn(l, c.model, null, pl.K_LOC, key, null));
+        if (v != null && v.valid() && v.hasModel()) { hideVanillaBlock(bl); return; }
+        if (v != null) { v.remove(); visuals.remove(key); }   // modèle non appliqué (ex: ModelEngine pas encore prêt) : on réessaie
+        Location l = bl.clone().add(0.5, 0, 0.5);
+        v = ModelVisual.spawn(l, c.model, null, pl.K_LOC, key, null);
+        visuals.put(key, v);
+        if (v.hasModel()) hideVanillaBlock(bl);
+    }
+
+    /**
+     * Avec un modèle 3D, le bloc vanilla (coffre...) ne doit plus se voir : on le remplace par une barrière
+     * (invisible, mais toujours solide et cliquable). Seulement une fois le modèle bien appliqué.
+     */
+    private void hideVanillaBlock(Location bl) {
+        Block b = bl.getBlock();
+        if (b.getType() != Material.BARRIER && !b.getType().isAir()) b.setType(Material.BARRIER, false);
+    }
+
+    /** Plus de modèle sur cette caisse : on remet son bloc d'origine à la place de la barrière. */
+    private void restoreBlock(Location bl, Crate c) {
+        Block b = bl.getBlock();
+        if (b.getType() == Material.BARRIER && c.block != Material.BARRIER && c.block.isBlock()) b.setType(c.block, false);
     }
 
     public ModelVisual visual(String key) { return visuals.get(key); }

@@ -85,17 +85,46 @@ public final class Hooks {
         }
     }
 
-    public static void attachModelEngine(Entity base, String blueprint) {
-        if (!modelEngine) return;
+    private static final java.util.Set<String> WARNED = new java.util.HashSet<>();
+
+    private static void warnOnce(String msg) {
+        if (WARNED.add(msg)) TripleCratesPlugin.get().getLogger().warning(msg);
+    }
+
+    /** @return true si le modèle est bien appliqué (sinon la caisse garde son bloc vanilla visible). */
+    public static boolean attachModelEngine(Entity base, String blueprint) {
+        if (!modelEngine) { warnOnce("ModelEngine n'est pas installé : le modèle '" + blueprint + "' est ignoré."); return false; }
         try {
             Class<?> api = Class.forName("com.ticxo.modelengine.api.ModelEngineAPI");
             Object active = callStatic(api, "createActiveModel", blueprint);
             Object modeled = callStatic(api, "createModeledEntity", base);
             call(modeled, "addModel", active, true);
             try { call(modeled, "setBaseEntityVisible", false); } catch (Throwable ignored) {}
+            lockModel(base);
+            return true;
         } catch (Throwable t) {
-            TripleCratesPlugin.get().getLogger().warning("ModelEngine: impossible d'appliquer '" + blueprint + "' : " + t);
+            warnOnce("ModelEngine: impossible d'appliquer '" + blueprint + "' : " + t);
+            return false;
         }
+    }
+
+    /**
+     * Empêche le modèle de réagir aux coups (teinte rouge de dégâts) : un clic gauche sur la caisse ouvre
+     * l'aperçu, il ne doit pas "blesser" le modèle. Sans effet si ModelEngine est absent ou sans modèle.
+     */
+    public static void lockModel(Entity base) {
+        if (!modelEngine || base == null) return;
+        try {
+            Object modeled = callStatic(Class.forName("com.ticxo.modelengine.api.ModelEngineAPI"), "getModeledEntity", base);
+            if (modeled instanceof java.util.Optional<?> o) modeled = o.orElse(null);
+            if (modeled == null) return;
+            Object models = call(modeled, "getModels");
+            if (models instanceof java.util.Map<?, ?> mp) {
+                for (Object am : mp.values()) {
+                    try { call(am, "setCanHurt", false); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     /**

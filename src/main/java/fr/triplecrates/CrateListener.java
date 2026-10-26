@@ -12,6 +12,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -82,6 +83,13 @@ public final class CrateListener implements Listener {
         e.setCancelled(true);
         Crate c = pl.crates().crateAtKey(loc);
         if (c != null && throttle(e.getPlayer())) preview(e.getPlayer(), c);
+    }
+
+    /** Les hitbox / modèles de caisse et les coffres d'animation ne prennent jamais de dégâts (pas de teinte rouge). */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onDamage(EntityDamageEvent e) {
+        var pdc = e.getEntity().getPersistentDataContainer();
+        if (pdc.has(pl.K_LOC, PersistentDataType.STRING) || pdc.has(pl.K_SESSION, PersistentDataType.STRING)) e.setCancelled(true);
     }
 
     /** Aperçu : uniquement sur la caisse, avant l'ouverture (pas pendant l'animation, pas sur les 3 coffres). */
