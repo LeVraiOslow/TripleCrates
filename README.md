@@ -52,6 +52,16 @@ Chaque entrée de `items` : `slot` ou `slots`, `item` (matériau, `nexo:<id>`, `
 - Pour retirer une caisse à modèle : Shift + casser la barrière en **créatif** (la barrière est incassable en survie).
 - Le modèle ne prend jamais de dégâts (pas de teinte rouge au clic gauche / aperçu).
 
+## Modèle des 3 coffres (Nexo, ModelEngine, MythicMobs)
+- Coffre Nexo : `chest-item: nexo:storage_chest` dans `default-animation` (config.yml), ou par caisse dans
+  l'éditeur (Animation > Item / modèle Nexo des coffres, en tenant l'item ou en tapant `nexo:storage_chest`).
+  Le modèle de l'item est affiché sur chaque coffre ; ajuste `chest-scale`, `chest-y-offset` et
+  `chest-item-transform` si besoin.
+- Hologrammes : fond transparent et texte ombré (`hologram.background`, `hologram.shadow` dans config.yml).
+- Au choix de la récompense, les 3 coffres disparaissent immédiatement. `end-delay` ne règle plus que le
+  délai avant que la caisse réapparaisse.
+- Une caisse avec modèle 3D garde son modèle visible pendant toute l'animation (elle ne gonfle pas).
+
 ## Compilation
 Prérequis : JDK 25 + Gradle.
     gradle build
