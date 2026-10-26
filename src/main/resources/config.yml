@@ -4,6 +4,8 @@ key-in-hand: true
 
 # Hologramme au-dessus de chaque coffre. Placeholders : <name> <rarity> <chance>
 hologram:
+  background: transparent   # transparent, #RRGGBB ou #AARRGGBB
+  shadow: true              # ombre du texte
   lines:
     - "<name>"
     - "<rarity>"
@@ -52,7 +54,11 @@ default-animation:
   spacing: 2.4           # écart entre les coffres
   choose-timeout: 30     # secondes (au bout, un coffre est choisi au hasard)
   end-delay: 40          # ticks avant disparition après le choix
-  chest-item: CHEST      # item affiché pour les coffres (ex: nexo:mon_coffre)
+  chest-item: CHEST      # item affiché pour les coffres. Coffre Nexo : nexo:storage_chest
+  chest-scale: 1.1       # taille du modèle des coffres
+  chest-y-offset: auto   # hauteur du centre du modèle ("auto" = taille / 2, le modèle est posé sur le sol)
+  chest-item-transform: NONE   # NONE | FIXED | GROUND | HEAD ... si un modèle Nexo apparaît déformé ou mal orienté
+  vanish-particle: poof  # nuage quand les coffres disparaissent après le choix
   chest-model-type: NONE # NONE | MYTHICMOBS | MODELENGINE
   chest-model-id: ""
 
