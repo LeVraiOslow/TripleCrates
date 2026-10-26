@@ -2,7 +2,6 @@ package fr.triplecrates;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
@@ -491,7 +490,7 @@ public final class OpenSession {
     private Component join(List<String> lines, Reward r) {
         TagResolver tr = resolver(r);
         List<Component> out = new ArrayList<>();
-        for (String l : lines) out.add(MiniMessage.miniMessage().deserialize(l, tr));
+        for (String l : lines) out.add(Text.parseWith(l, tr));
         return Component.join(JoinConfiguration.newlines(), out);
     }
 

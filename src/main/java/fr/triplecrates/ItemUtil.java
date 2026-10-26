@@ -65,14 +65,19 @@ public final class ItemUtil {
         return c;
     }
 
-    /** item / name / lore depuis une section de config. */
+    /** item / name / lore / amount / glow / hide-tooltip depuis une section de config (item : matériau, nexo:<id>, base64:...). */
     public static ItemStack fromSection(ConfigurationSection s, String defItem) {
         ItemStack it = parse(s == null ? defItem : s.getString("item", defItem), 1);
         if (s == null) return it;
+        if (s.contains("amount")) it.setAmount(Math.max(1, Math.min(it.getMaxStackSize(), s.getInt("amount", 1))));
         ItemMeta meta = it.getItemMeta();
+        if (meta == null) return it;
         if (s.contains("name")) meta.displayName(Text.item(s.getString("name")));
         List<String> lore = s.getStringList("lore");
         if (!lore.isEmpty()) meta.lore(lore.stream().map(Text::item).toList());
+        if (s.getBoolean("glow", false)) meta.setEnchantmentGlintOverride(true);
+        if (s.getBoolean("hide-tooltip", false)) meta.setHideTooltip(true);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         it.setItemMeta(meta);
         return it;
     }

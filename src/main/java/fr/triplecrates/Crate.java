@@ -21,6 +21,11 @@ public final class Crate {
     public String previewTitle, previewFiller;
     public int previewRows;
     public boolean showChance = true, showRarity = true;
+    // --- aperçu personnalisable (voir README) ---
+    public List<?> previewRewardSlots;              // cases où se placent les récompenses sans preview-slot (null = automatique)
+    public String previewFillerArea = "bottom-row"; // bottom-row | all | none
+    public YamlConfiguration previewItems;          // boutons / décor (null = ceux de config.yml)
+    public List<String> previewRewardLore;          // lore ajouté aux récompenses (null = rareté + chance)
     public final Map<String, Reward> rewards = new LinkedHashMap<>();
 
     public Crate(String id) {
@@ -47,6 +52,15 @@ public final class Crate {
         c.previewFiller = y.getString("preview.filler", c.previewFiller);
         c.showChance = y.getBoolean("preview.show-chance", true);
         c.showRarity = y.getBoolean("preview.show-rarity", true);
+        if (y.isList("preview.reward-slots")) c.previewRewardSlots = y.getList("preview.reward-slots");
+        c.previewFillerArea = y.getString("preview.filler-area", "bottom-row");
+        if (y.isList("preview.reward-lore")) c.previewRewardLore = new ArrayList<>(y.getStringList("preview.reward-lore"));
+        ConfigurationSection pi = y.getConfigurationSection("preview.items");
+        if (pi != null) {
+            YamlConfiguration cp = new YamlConfiguration();
+            for (String k : pi.getKeys(true)) { Object v = pi.get(k); if (!(v instanceof ConfigurationSection)) cp.set(k, v); }
+            c.previewItems = cp;
+        }
         ConfigurationSection rs = y.getConfigurationSection("rewards");
         if (rs != null) for (String rid : rs.getKeys(false)) c.rewards.put(rid, Reward.load(rid, rs.getConfigurationSection(rid)));
         return c;
@@ -66,6 +80,16 @@ public final class Crate {
         y.set("preview.filler", previewFiller);
         y.set("preview.show-chance", showChance);
         y.set("preview.show-rarity", showRarity);
+        y.set("preview.filler-area", previewFillerArea);
+        if (previewRewardSlots != null) y.set("preview.reward-slots", previewRewardSlots);
+        if (previewRewardLore != null) y.set("preview.reward-lore", previewRewardLore);
+        if (previewItems != null) {
+            y.createSection("preview.items");
+            for (String k : previewItems.getKeys(true)) {
+                Object v = previewItems.get(k);
+                if (!(v instanceof ConfigurationSection)) y.set("preview.items." + k, v);
+            }
+        }
         ConfigurationSection rs = y.createSection("rewards");
         rewards.forEach((rid, r) -> r.save(rs.createSection(rid)));
         return y;

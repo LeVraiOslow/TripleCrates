@@ -23,6 +23,7 @@ public final class Reward {
     public Type type = Type.ITEM;
     public List<String> commands = new ArrayList<>();
     public boolean broadcast;
+    public Integer previewSlot;         // case dans l'aperçu (négatif = depuis la fin), null = placement automatique
 
     public Reward(String id) { this.id = id; }
 
@@ -37,6 +38,7 @@ public final class Reward {
         r.type = "COMMAND".equalsIgnoreCase(s.getString("type")) ? Type.COMMAND : Type.ITEM;
         r.commands = new ArrayList<>(s.getStringList("commands"));
         r.broadcast = s.getBoolean("broadcast", false);
+        r.previewSlot = s.contains("preview-slot") ? s.getInt("preview-slot") : null;
         return r;
     }
 
@@ -50,6 +52,7 @@ public final class Reward {
         s.set("weight", weight);
         s.set("commands", commands);
         s.set("broadcast", broadcast);
+        s.set("preview-slot", previewSlot);
     }
 
     /** Item affiché (hologramme, aperçu, éditeur). */

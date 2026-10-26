@@ -291,7 +291,7 @@ public final class Editor {
                 "<gray>Astuce : colle ici le glyphe Nexo du GUI custom", "<yellow>Clic <gray>: modifier"),
                 e -> Prompt.ask(p, "Titre de l'aperçu (MiniMessage, %crate%, glyphes)", s -> { c.previewTitle = s; save(c); previewSettings(p, c); }));
         m.set(11, ic(Material.LADDER, "<yellow>Nombre de lignes", "<gray>Actuel : <white>" + c.previewRows, "", "<yellow>Gauche/droit <gray>: +/-"), e -> {
-            c.previewRows = Math.max(3, Math.min(6, c.previewRows + (e.getClick().isRightClick() ? -1 : 1)));
+            c.previewRows = Math.max(1, Math.min(6, c.previewRows + (e.getClick().isRightClick() ? -1 : 1)));
             save(c);
             previewSettings(p, c);
         });

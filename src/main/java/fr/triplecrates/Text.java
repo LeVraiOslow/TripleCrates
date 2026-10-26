@@ -15,28 +15,69 @@ import java.util.regex.Pattern;
 
 public final class Text {
     private static final MiniMessage MM = MiniMessage.miniMessage();
-    private static final Pattern LEGACY = Pattern.compile("&([0-9a-fk-or])");
+    // &c  §c  &#RRGGBB  &x&R&R&G&G&B&B
+    private static final Pattern LEGACY = Pattern.compile("(?i)[&\u00a7](?:x(?:[&\u00a7][0-9a-f]){6}|#[0-9a-f]{6}|[0-9a-fk-or])");
+    // #RRGGBB "nu" (pas dans une balise <#...>, <gradient:#...>, une URL, ni collé à un mot)
+    private static final Pattern BARE_HEX = Pattern.compile("(?<![<:\\w&\u00a7#/])#([0-9a-fA-F]{6})(?![0-9a-zA-Z])");
     private static final DecimalFormat DF = new DecimalFormat("0.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
     private Text() {}
 
-    public static Component parse(String s) { return MM.deserialize(s == null ? "" : s); }
+    /** Texte brut -> Component. Accepte MiniMessage, codes &/§ (&3, &l...), &#RRGGBB, &x&R&R&G&G&B&B, #RRGGBB et <#RRGGBB>. */
+    public static Component parse(String s) { return MM.deserialize(preprocess(s)); }
     public static Component item(String s) { return parse(s).decoration(TextDecoration.ITALIC, false); }
     public static Component parseWith(String s, TagResolver... r) {
-        return MM.deserialize(s == null ? "" : s, r).decoration(TextDecoration.ITALIC, false);
+        return MM.deserialize(preprocess(s), r).decoration(TextDecoration.ITALIC, false);
     }
     public static String plain(Component c) { return PlainTextComponentSerializer.plainText().serialize(c); }
     public static String num(double d) { return DF.format(d); }
 
-    public static String legacyToMini(String s) {
-        return LEGACY.matcher(s).replaceAll(r -> java.util.regex.Matcher.quoteReplacement(switch (r.group(1)) {
-            case "0" -> "<black>"; case "1" -> "<dark_blue>"; case "2" -> "<dark_green>"; case "3" -> "<dark_aqua>";
-            case "4" -> "<dark_red>"; case "5" -> "<dark_purple>"; case "6" -> "<gold>"; case "7" -> "<gray>";
-            case "8" -> "<dark_gray>"; case "9" -> "<blue>"; case "a" -> "<green>"; case "b" -> "<aqua>";
-            case "c" -> "<red>"; case "d" -> "<light_purple>"; case "e" -> "<yellow>"; case "f" -> "<white>";
-            case "k" -> "<obfuscated>"; case "l" -> "<bold>"; case "m" -> "<strikethrough>"; case "n" -> "<underlined>";
-            case "o" -> "<italic>"; default -> "<reset>";
-        }));
+    /** Ancien nom, conservé. */
+    public static String legacyToMini(String s) { return preprocess(s); }
+
+    private static String legacyName(char c) {
+        return switch (c) {
+            case '0' -> "black"; case '1' -> "dark_blue"; case '2' -> "dark_green"; case '3' -> "dark_aqua";
+            case '4' -> "dark_red"; case '5' -> "dark_purple"; case '6' -> "gold"; case '7' -> "gray";
+            case '8' -> "dark_gray"; case '9' -> "blue"; case 'a' -> "green"; case 'b' -> "aqua";
+            case 'c' -> "red"; case 'd' -> "light_purple"; case 'e' -> "yellow"; case 'f' -> "white";
+            case 'k' -> "obfuscated"; case 'l' -> "bold"; case 'm' -> "strikethrough"; case 'n' -> "underlined";
+            case 'o' -> "italic"; default -> "reset";
+        };
+    }
+
+    /**
+     * Convertit les codes couleur (&3, &l, &#ff8800, &x&f&f&8&8&0&0, #ff8800) en MiniMessage.
+     * Comme en jeu, une couleur annule les styles précédents (gras, etc.). Sans effet sur du MiniMessage pur.
+     */
+    public static String preprocess(String s) {
+        if (s == null || s.isEmpty()) return "";
+        if (s.indexOf('&') < 0 && s.indexOf('\u00a7') < 0 && s.indexOf('#') < 0) return s;
+        s = BARE_HEX.matcher(s).replaceAll("<#$1>");
+        var m = LEGACY.matcher(s);
+        StringBuilder out = new StringBuilder();
+        boolean styled = false;
+        int last = 0;
+        while (m.find()) {
+            out.append(s, last, m.start());
+            last = m.end();
+            String body = m.group().substring(1).toLowerCase(Locale.ROOT);
+            String hex = null;
+            if (body.startsWith("x")) hex = body.substring(1).replaceAll("[&\u00a7]", "");
+            else if (body.startsWith("#")) hex = body.substring(1);
+            if (hex != null) {
+                out.append(styled ? "<reset>" : "").append("<#").append(hex).append('>');
+                styled = false;
+                continue;
+            }
+            char c = body.charAt(0);
+            String name = legacyName(c);
+            if (c == 'r') { out.append("<reset>"); styled = false; }
+            else if ("klmno".indexOf(c) >= 0) { out.append('<').append(name).append('>'); styled = true; }
+            else { out.append(styled ? "<reset>" : "").append('<').append(name).append('>'); styled = false; }
+        }
+        out.append(s, last, s.length());
+        return out.toString();
     }
 
     public static String msgRaw(String key, String... kv) {

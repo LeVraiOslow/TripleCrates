@@ -32,7 +32,7 @@ public final class Prompt implements Listener {
         Consumer<String> cb = PENDING.remove(e.getPlayer().getUniqueId());
         if (cb == null) return;
         e.setCancelled(true);
-        String s = Text.legacyToMini(PlainTextComponentSerializer.plainText().serialize(e.message()).trim());
+        String s = PlainTextComponentSerializer.plainText().serialize(e.message()).trim();
         Player p = e.getPlayer();
         Bukkit.getScheduler().runTask(pl, () -> {
             if (s.equalsIgnoreCase("cancel")) Text.send(p, "prompt-cancelled");

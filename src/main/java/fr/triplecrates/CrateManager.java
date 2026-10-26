@@ -88,7 +88,7 @@ public final class CrateManager {
         write(y, file("data.yml"));
     }
 
-    public String rarityName(String id) { return rarities.getOrDefault(id, id); }
+    public String rarityName(String id) { return Text.preprocess(rarities.getOrDefault(id, id)); }
 
     public static String sanitize(String s) {
         String r = s.toLowerCase(Locale.ROOT).trim().replace(' ', '_');
