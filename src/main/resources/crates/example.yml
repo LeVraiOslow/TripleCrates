@@ -14,9 +14,31 @@ animation: {}     # vide = valeurs de config.yml (default-animation)
 preview:
   title: "<dark_gray>Récompenses • %crate%"
   rows: 5
-  filler: BLACK_STAINED_GLASS_PANE
+  filler: BLACK_STAINED_GLASS_PANE   # matériau, nexo:<id>, ou NONE
   show-chance: true
   show-rarity: true
+  # ---- Mise en page personnalisée (tout est optionnel, voir README) ----
+  # filler-area: bottom-row          # bottom-row | all | none
+  # reward-slots: [10, 11, 12, 13, 14, 15, 16, "19-25"]   # cases des récompenses sans preview-slot (négatif = depuis la fin)
+  # reward-lore:                     # remplace les lignes Rareté/Chance (<rarity> <chance> <weight> <amount> <name>)
+  #   - ""
+  #   - "&7Rareté : <rarity>"
+  #   - "&7Chance : #ffcc00<chance>%"
+  # items:                           # si présent : REMPLACE les boutons/décor de config.yml
+  #   close:
+  #     slot: 40
+  #     item: nexo:bouton_fermer     # icône Nexo
+  #     name: "&cFermer"
+  #     action: close                # close | next-page | prev-page | command | none
+  #   next:
+  #     slot: 44
+  #     item: ARROW
+  #     name: "&eSuivant »"
+  #     action: next-page
+  #   cadre:
+  #     slots: ["0-8", 36, 37]       # décor
+  #     item: nexo:cadre_or
+  #     hide-tooltip: true
 rewards:
   diamants:
     type: ITEM
@@ -24,6 +46,7 @@ rewards:
     amount: 3
     rarity: rare
     weight: 20
+    # preview-slot: 22               # case dans l'aperçu (sinon placement automatique)
   fer:
     type: ITEM
     item: IRON_INGOT
