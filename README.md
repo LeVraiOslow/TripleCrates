@@ -57,6 +57,10 @@ Chaque entrée de `items` : `slot` ou `slots`, `item` (matériau, `nexo:<id>`, `
   l'éditeur (Animation > Item / modèle Nexo des coffres, en tenant l'item ou en tapant `nexo:storage_chest`).
   Le modèle de l'item est affiché sur chaque coffre ; ajuste `chest-scale`, `chest-y-offset` et
   `chest-item-transform` si besoin.
+- Modèle tourné dans le mauvais sens : essaie `chest-yaw-offset: 90`, puis `-90` ou `180`.
+- Modèle décentré par rapport à l'hologramme : `chest-offset-right` (0.2 = 0,2 bloc vers la droite du joueur,
+  négatif = vers la gauche) et `chest-offset-forward`. Règle d'abord la rotation, puis le centrage.
+  `/crates reload` puis `/crates open <joueur> <caisse>` permet de tester sans clé.
 - Hologrammes : fond transparent et texte ombré (`hologram.background`, `hologram.shadow` dans config.yml).
 - Au choix de la récompense, les 3 coffres disparaissent immédiatement. `end-delay` ne règle plus que le
   délai avant que la caisse réapparaisse.
