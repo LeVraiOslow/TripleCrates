@@ -46,6 +46,7 @@ public final class OpenSession {
         ModelVisual chest;
         Location target;
         float yaw;
+        Vector shift = new Vector();   // décalage du modèle du coffre (hitbox comprise), l'hologramme reste centré
         Reward reward;
         TextDisplay text;
         ItemDisplay icon;
@@ -223,8 +224,12 @@ public final class OpenSession {
         spec.height = 1.2 * scale / 1.1;
         ItemStack chestItem = ItemUtil.parse(crate.str("chest-item"), 1);
 
+        // recentrage du modèle (ex: coffre Nexo dont l'origine n'est pas au centre) : relatif au joueur
+        Vector shift = right.clone().multiply(crate.num("chest-offset-right", 0)).add(f.clone().multiply(crate.num("chest-offset-forward", 0)));
+
         for (int i = 0; i < rewards.size(); i++) {
             Slot s = new Slot();
+            s.shift = shift;
             s.reward = rewards.get(i);
             s.target = base.clone().add(right.clone().multiply((i - (rewards.size() - 1) / 2.0) * spacing));
 
@@ -237,7 +242,7 @@ public final class OpenSession {
             }
             s.yaw = yaw + (float) (turn * delta) + yawOffset;
 
-            Location top = s.target.clone().add(0, h, 0);
+            Location top = s.target.clone().add(s.shift).add(0, h, 0);
             top.setYaw(s.yaw);
             top.setPitch(0);
             s.chest = ModelVisual.spawn(top, spec, chestItem, style, pl.K_SESSION, player.getUniqueId() + ":" + i, player);
@@ -271,7 +276,7 @@ public final class OpenSession {
         }
 
         for (Slot s : slots) {
-            Location l = s.target.clone().add(0, off, 0);
+            Location l = s.target.clone().add(s.shift).add(0, off, 0);
             l.setYaw(s.yaw);
             l.setPitch(0);
             s.chest.moveTo(l);
