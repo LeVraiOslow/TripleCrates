@@ -81,6 +81,13 @@ public final class Crate {
         try { return Double.parseDouble(str(key)); } catch (NumberFormatException e) { return 0; }
     }
 
+    /** Comme num(), mais avec une valeur par défaut si la clé est absente (anciens fichiers de config). */
+    public double num(String key, double def) {
+        String s = str(key);
+        if (s == null || s.isBlank()) return def;
+        try { return Double.parseDouble(s); } catch (NumberFormatException e) { return def; }
+    }
+
     public double totalWeight() { return rewards.values().stream().mapToDouble(r -> Math.max(0, r.weight)).sum(); }
 
     public double chance(Reward r) {

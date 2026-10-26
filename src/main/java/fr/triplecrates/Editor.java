@@ -40,8 +40,12 @@ public final class Editor {
             new AS("end-delay", "Délai de fin (ticks)", Material.REPEATER, "N", 10, 0, 200),
             new AS("chest-item", "Item / modèle Nexo des coffres", Material.CHEST, "I", 0, 0, 0),
             new AS("chest-model-type", "Modèle des coffres : type", Material.ARMOR_STAND, "M", 0, 0, 0),
-            new AS("chest-model-id", "Modèle des coffres : ID", Material.NAME_TAG, "T", 0, 0, 0));
-    private static final int[] ANIM_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30};
+            new AS("chest-model-id", "Modèle des coffres : ID", Material.NAME_TAG, "T", 0, 0, 0),
+            new AS("inflate-ticks", "Durée du gonflement (ticks)", Material.PUFFERFISH, "N", 4, 10, 200),
+            new AS("inflate-scale", "Taille max avant explosion (x)", Material.SLIME_BLOCK, "N", 0.25, 1, 4),
+            new AS("bounce-height", "Hauteur du rebond (blocs, 0 = aucun)", Material.SLIME_BALL, "N", 0.1, 0, 2),
+            new AS("spin-ticks", "Durée de la machine à sous (ticks)", Material.GOLD_INGOT, "N", 10, 20, 200));
+    private static final int[] ANIM_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
 
     public Editor(TripleCratesPlugin pl) { this.pl = pl; }
 

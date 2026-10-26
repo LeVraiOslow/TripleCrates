@@ -64,7 +64,7 @@ public final class ModelVisual {
                 d.setBillboard(Display.Billboard.FIXED);
                 d.setPersistent(false);
                 if (onlyFor != null) d.setVisibleByDefault(false);
-                d.setTeleportDuration(2);
+                d.setTeleportDuration(1);
                 d.setTransformation(new Transformation(new Vector3f(0, 0.55f, 0), new AxisAngle4f(), new Vector3f(1.1f, 1.1f, 1.1f), new AxisAngle4f()));
             });
             if (onlyFor != null) onlyFor.showEntity(plugin, v.display);
