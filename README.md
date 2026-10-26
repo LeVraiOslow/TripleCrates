@@ -18,6 +18,33 @@ Tous les réglages sont dans `default-animation` (config.yml) et modifiables par
 Note : une caisse avec un modèle 3D (MythicMobs/ModelEngine) ne peut pas gonfler (le modèle reste tel quel
 jusqu'à l'explosion) ; les caisses « bloc » gonflent normalement.
 
+## Couleurs et formats de texte
+Partout (noms de caisse/clé/récompense, lore, messages, titres d'aperçu, hologrammes, rarités, éditeur, chat) :
+- codes Minecraft : `&3`, `&l`, `&r`... (le `§` marche aussi) ;
+- couleurs HTML / hex : `#ff8800`, `&#ff8800`, `<#ff8800>`, `&x&f&f&8&8&0&0` ;
+- MiniMessage : `<red>`, `<gradient:#ff0000:#0000ff>`, `<bold>`... ;
+- tout se mélange. Comme en jeu, une couleur annule le gras/souligné précédent.
+
+## Aperçu personnalisable (par caisse)
+Section `preview` du fichier de la caisse (`crates/<id>.yml`). Tout est optionnel.
+
+| Clé | Rôle |
+|---|---|
+| `title`, `rows` (1 à 6) | titre (glyphes Nexo ok, `%crate%`) et nombre de lignes |
+| `reward-slots` | cases où se placent les récompenses sans `preview-slot`, dans l'ordre : `[10, 11, "19-25"]` |
+| `rewards.<id>.preview-slot` | case fixe d'une récompense (affichée sur toutes les pages) |
+| `reward-lore` | lignes ajoutées sous chaque récompense : `<rarity> <chance> <weight> <amount> <name>` |
+| `filler`, `filler-area` | item de remplissage (matériau ou `nexo:<id>`) et zone : `bottom-row`, `all`, `none` |
+| `items` | boutons et décor, voir ci-dessous (remplace ceux de config.yml) |
+
+Les cases : numéro (0 = en haut à gauche), intervalle `"0-8"`, ou négatif pour compter depuis la fin (`-1` = dernière case).
+Si les récompenses sont plus nombreuses que les cases disponibles, des pages sont créées (boutons `next-page` / `prev-page`).
+
+Chaque entrée de `items` : `slot` ou `slots`, `item` (matériau, `nexo:<id>`, `base64:...`), `name`, `lore`, `amount`,
+`glow`, `hide-tooltip`, `action` (`close`, `next-page`, `prev-page`, `command`, `none`),
+`commands` (pour `command` ; `%player%`, préfixes `[player]` par défaut, `[console]`, `[close]`),
+`show` (`always`, `has-next`, `has-prev`). Un exemple commenté se trouve dans `crates/example.yml`.
+
 ## Compilation
 Prérequis : JDK 25 + Gradle.
     gradle build
