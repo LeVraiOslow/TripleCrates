@@ -6,6 +6,18 @@ ouvre l'aperçu des récompenses.
 L'animation (explosion, 3 coffres, hologrammes, particules, sons) n'est visible que par le joueur qui ouvre
 la caisse (moins de paquets, moins de lag).
 
+## Animation d'ouverture
+1. La caisse **gonfle** (jusqu'à `inflate-scale`, 2x par défaut) en tremblant de plus en plus, puis **explose**.
+2. Les 3 coffres **tombent** (accélération), **rebondissent** légèrement puis se stabilisent, bien droits.
+   Les coffres de gauche et de droite sont légèrement tournés vers le joueur (`side-turn`).
+3. **Machine à sous** : sur chaque coffre les récompenses défilent puis ralentissent et s'arrêtent sur la vraie
+   récompense (gauche, puis milieu, puis droite). À l'arrêt, des éclats jaillissent du coffre, de la couleur de la
+   rareté (`rarity-colors` dans config.yml : vert commun, bleu rare, violet épique, rouge mythique).
+4. Le joueur choisit son coffre au clic droit.
+Tous les réglages sont dans `default-animation` (config.yml) et modifiables par caisse dans l'éditeur.
+Note : une caisse avec un modèle 3D (MythicMobs/ModelEngine) ne peut pas gonfler (le modèle reste tel quel
+jusqu'à l'explosion) ; les caisses « bloc » gonflent normalement.
+
 ## Compilation
 Prérequis : JDK 25 + Gradle.
     gradle build
