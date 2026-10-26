@@ -23,7 +23,16 @@ public final class ModelVisual {
     private double yOffset;
     private boolean modelOk;
 
+    /** Apparence du coffre quand c'est un item (vanilla ou Nexo) : taille, hauteur du centre, transform d'affichage. */
+    public record ChestStyle(float scale, float yOffset, ItemDisplay.ItemDisplayTransform transform) {
+        public static final ChestStyle DEFAULT = new ChestStyle(1.1f, 0.55f, ItemDisplay.ItemDisplayTransform.NONE);
+    }
+
     public static ModelVisual spawn(Location loc, Hooks.ModelSpec model, ItemStack chestItem, NamespacedKey tagKey, String tagVal, Player onlyFor) {
+        return spawn(loc, model, chestItem, ChestStyle.DEFAULT, tagKey, tagVal, onlyFor);
+    }
+
+    public static ModelVisual spawn(Location loc, Hooks.ModelSpec model, ItemStack chestItem, ChestStyle style, NamespacedKey tagKey, String tagVal, Player onlyFor) {
         TripleCratesPlugin plugin = TripleCratesPlugin.get();
         ModelVisual v = new ModelVisual();
         World w = loc.getWorld();
@@ -65,12 +74,12 @@ public final class ModelVisual {
         } else if (chestItem != null) {
             v.display = w.spawn(loc, ItemDisplay.class, d -> {
                 d.setItemStack(chestItem);
-                d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.NONE);
+                d.setItemDisplayTransform(style.transform());
                 d.setBillboard(Display.Billboard.FIXED);
                 d.setPersistent(false);
                 if (onlyFor != null) d.setVisibleByDefault(false);
                 d.setTeleportDuration(1);
-                d.setTransformation(new Transformation(new Vector3f(0, 0.55f, 0), new AxisAngle4f(), new Vector3f(1.1f, 1.1f, 1.1f), new AxisAngle4f()));
+                d.setTransformation(new Transformation(new Vector3f(0, style.yOffset(), 0), new AxisAngle4f(), new Vector3f(style.scale(), style.scale(), style.scale()), new AxisAngle4f()));
             });
             if (onlyFor != null) onlyFor.showEntity(plugin, v.display);
         }

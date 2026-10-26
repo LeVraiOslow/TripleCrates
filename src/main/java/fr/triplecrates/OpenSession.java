@@ -78,6 +78,7 @@ public final class OpenSession {
     private final float yaw;
     private final float yawOffset;
     private ItemDisplay crateDisplay;
+    private boolean modelShown;       // la caisse a un modèle 3D visible : on ne le touche pas
 
     public OpenSession(TripleCratesPlugin pl, Player player, Crate crate, String locKey, Location crateLoc) {
         this.pl = pl;
@@ -99,13 +100,15 @@ public final class OpenSession {
     // =====================================================================================================
     public void begin() {
         ACTIVE.put(player.getUniqueId(), this);
-        boolean hasModel = crate.model.active();
+        ModelVisual cv = locKey == null ? null : pl.crates().visual(locKey);
+        modelShown = cv != null && cv.valid() && cv.hasModel();
         if (locKey != null) {
             BUSY.add(locKey);
             // caisse "bloc" : on la remplace par un faux modèle qui gonfle (visible uniquement par le joueur)
-            if (!hasModel) player.sendBlockChange(crateLoc, Material.AIR.createBlockData());
+            // caisse avec modèle 3D : le modèle reste en place pendant toute l'animation
+            if (!modelShown) player.sendBlockChange(crateLoc, Material.AIR.createBlockData());
         }
-        if (locKey == null || !hasModel) spawnCrateDisplay();
+        if (!modelShown) spawnCrateDisplay();
         Fx.sound(player, center(), crate.str("inflate-start-sound"), 1f, 1f);
         task = Bukkit.getScheduler().runTaskTimer(pl, this::tick, 1L, 1L);
     }
@@ -184,11 +187,6 @@ public final class OpenSession {
 
     private void explode() {
         if (crateDisplay != null) { crateDisplay.remove(); crateDisplay = null; }
-        if (locKey != null && crate.model.active()) {
-            ModelVisual v = pl.crates().visual(locKey);
-            if (v != null) v.hideFor(pl, player);
-            player.sendBlockChange(crateLoc, Material.AIR.createBlockData());
-        }
         Location c = center();
         Fx.sound(player, c, crate.str("explosion-sound"), 1f, 1f);
         Fx.particle(player, c, crate.str("explosion-particle"), 2, 0.3, 0.02);
@@ -211,8 +209,18 @@ public final class OpenSession {
         Hooks.ModelSpec spec = new Hooks.ModelSpec();
         spec.type = crate.str("chest-model-type").toUpperCase();
         spec.id = crate.str("chest-model-id");
-        spec.width = 1.2;
-        spec.height = 1.2;
+        float scale = (float) Math.max(0.1, crate.num("chest-scale", 1.1));
+        String yo = crate.str("chest-y-offset");
+        float yOff = scale * 0.5f;   // "auto" : le modèle est centré sur son origine, on le pose sur le sol
+        if (!yo.isBlank() && !yo.equalsIgnoreCase("auto")) {
+            try { yOff = Float.parseFloat(yo); } catch (NumberFormatException ignored) {}
+        }
+        ItemDisplay.ItemDisplayTransform tr = ItemDisplay.ItemDisplayTransform.NONE;
+        try { tr = ItemDisplay.ItemDisplayTransform.valueOf(crate.str("chest-item-transform").trim().toUpperCase()); }
+        catch (IllegalArgumentException ignored) {}
+        ModelVisual.ChestStyle style = new ModelVisual.ChestStyle(scale, yOff, tr);
+        spec.width = 1.2 * scale / 1.1;
+        spec.height = 1.2 * scale / 1.1;
         ItemStack chestItem = ItemUtil.parse(crate.str("chest-item"), 1);
 
         for (int i = 0; i < rewards.size(); i++) {
@@ -232,7 +240,7 @@ public final class OpenSession {
             Location top = s.target.clone().add(0, h, 0);
             top.setYaw(s.yaw);
             top.setPitch(0);
-            s.chest = ModelVisual.spawn(top, spec, chestItem, pl.K_SESSION, player.getUniqueId() + ":" + i, player);
+            s.chest = ModelVisual.spawn(top, spec, chestItem, style, pl.K_SESSION, player.getUniqueId() + ":" + i, player);
             slots.add(s);
         }
     }
@@ -449,6 +457,9 @@ public final class OpenSession {
             d.text(spinText(first));
             d.setBillboard(Display.Billboard.CENTER);
             d.setAlignment(TextDisplay.TextAlignment.CENTER);
+            d.setDefaultBackground(false);
+            d.setBackgroundColor(hologramBackground());
+            d.setShadowed(cfg.getBoolean("hologram.shadow", true));
             d.setPersistent(false);
         }));
         s.icon = only(w.spawn(itemLoc, ItemDisplay.class, d -> {
@@ -466,6 +477,18 @@ public final class OpenSession {
                 s.icon.setTransformation(scaled(scale));
             }
         }, 1L);
+    }
+
+    /** Fond de l'hologramme : "transparent" (défaut), ou #RRGGBB / #AARRGGBB. */
+    private Color hologramBackground() {
+        String bg = pl.getConfig().getString("hologram.background", "transparent").trim();
+        if (bg.equalsIgnoreCase("transparent") || bg.equalsIgnoreCase("none") || bg.isEmpty()) return Color.fromARGB(0, 0, 0, 0);
+        try {
+            String h = bg.replace("#", "");
+            long v = Long.parseLong(h, 16);
+            return h.length() > 6 ? Color.fromARGB((int) ((v >> 24) & 0xFF), (int) ((v >> 16) & 0xFF), (int) ((v >> 8) & 0xFF), (int) (v & 0xFF))
+                    : Color.fromARGB(0x40, (int) ((v >> 16) & 0xFF), (int) ((v >> 8) & 0xFF), (int) (v & 0xFF));
+        } catch (NumberFormatException e) { return Color.fromARGB(0, 0, 0, 0); }
     }
 
     /** L'entité n'est visible que par le joueur qui ouvre la caisse (moins de paquets / de lag). */
@@ -532,9 +555,21 @@ public final class OpenSession {
         Fx.particle(player, at, crate.str("win-particle"), 40, 0.6, 0.1);
         Fx.sound(player, at, crate.str("win-sound"), 1f, 1f);
         s.reward.give(player, crate);
+        removeChests();
         Text.send(player, "chosen", "%reward%", Text.plain(s.reward.nameComponent()), "%rarity%", pl.crates().rarityName(s.reward.rarity));
         phase = Phase.END;
         t = 0;
+    }
+
+    /** Les 3 coffres, hologrammes et éclats disparaissent immédiatement (avec un petit nuage). */
+    private void removeChests() {
+        shards.clear();
+        for (Slot s : slots) {
+            Fx.particle(player, s.target.clone().add(0, 0.6, 0), crate.str("vanish-particle"), 10, 0.35, 0.02);
+            if (s.chest != null) s.chest.remove();
+            if (s.text != null) s.text.remove();
+            if (s.icon != null) s.icon.remove();
+        }
     }
 
     /** Joueur déconnecté / plugin désactivé : donne une récompense aléatoire parmi les 3 si rien n'a été choisi. */
