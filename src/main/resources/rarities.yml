@@ -1,6 +1,7 @@
 # id: nom affiché (MiniMessage). Modifiable aussi via /crates editor
+# Couleur des éclats : voir "rarity-colors" dans config.yml
 rarities:
-  common: "<gray>Commun"
-  rare: "<aqua>Rare"
+  common: "<green>Commun"
+  rare: "<blue>Rare"
   epic: "<light_purple>Épique"
-  legendary: "<gold><bold>Légendaire"
+  mythic: "<red><bold>Mythique"

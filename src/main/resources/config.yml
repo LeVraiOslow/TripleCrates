@@ -11,6 +11,15 @@ hologram:
   item-height: 2.4
   item-scale: 1.4
 
+# Couleur des éclats qui jaillissent quand la machine à sous s'arrête (id de rareté -> couleur hex)
+rarity-colors:
+  common: "#55FF55"     # vert
+  rare: "#3B8CFF"       # bleu
+  epic: "#B03BFF"       # violet
+  mythic: "#FF3030"     # rouge
+  legendary: "#FF3030"  # ancien id : même couleur que mythic
+burst-count: 28         # nombre d'éclats par coffre
+
 # Valeurs par défaut des animations (chaque caisse peut les surcharger via /crates editor)
 default-animation:
   explosion-particle: explosion_emitter
@@ -20,9 +29,25 @@ default-animation:
   land-sound: block.anvil.land
   win-particle: totem_of_undying
   win-sound: entity.player.levelup
-  start-delay: 14        # ticks entre l'explosion de la caisse et la chute des coffres
+  # --- 1) la caisse gonfle puis explose
+  inflate-ticks: 36      # durée du gonflement
+  inflate-scale: 2.0     # taille max avant l'explosion (2.0 = deux fois plus grosse)
+  inflate-start-sound: entity.tnt.primed
+  inflate-sound: entity.puffer_fish.blow_up
+  inflate-particle: smoke
+  start-delay: 6         # ticks entre l'explosion de la caisse et la chute des coffres
+  # --- 2) chute + rebonds
   fall-height: 14        # blocs
-  fall-ticks: 28         # durée de la chute
+  fall-ticks: 16         # durée de la chute (accélération : "attirés" vers le sol)
+  bounce-height: 0.45    # hauteur du premier rebond (0 = pas de rebond)
+  side-turn: 0.5         # coffres gauche/droite tournés vers le joueur : 0 = parallèles, 1 = pile face à lui
+  chest-yaw-offset: 0    # mettre 180 si les coffres montrent leur dos au joueur
+  # --- 3) machine à sous
+  spin-ticks: 50         # durée du défilement du 1er coffre
+  spin-stagger: 14       # ticks de plus pour chaque coffre suivant (ils s'arrêtent l'un après l'autre)
+  spin-sound: block.note_block.hat
+  spin-stop-sound: block.note_block.bell
+  reveal-pause: 12       # ticks entre l'arrêt du dernier coffre et le début du choix
   distance: 3.0          # distance devant le joueur
   spacing: 2.4           # écart entre les coffres
   choose-timeout: 30     # secondes (au bout, un coffre est choisi au hasard)
