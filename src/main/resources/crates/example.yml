@@ -42,7 +42,7 @@ rewards:
     name: "<yellow>500 $"
     lore:
       - "<gray>Ajoutés à ton solde"
-    rarity: legendary
+    rarity: mythic
     weight: 2
     commands:
       - "eco give %player% 500"   # préfixes : [player] [console]
