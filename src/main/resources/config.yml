@@ -64,13 +64,23 @@ preview:
   lore:
     rarity: "<gray>Rareté : <rarity>"
     chance: "<gray>Chance : <yellow><chance>%"
-  items:      # item peut être un matériau ou nexo:<id>
+  # Boutons / décor de l'aperçu (valeurs par défaut, remplaçables entièrement par caisse : preview.items).
+  # Chaque entrée : slot (ou slots: liste, ranges "0-8", négatif = depuis la fin), item (matériau | nexo:<id> | base64:...),
+  # name, lore, amount, glow, hide-tooltip, action (close | next-page | prev-page | command | none),
+  # commands (pour action: command ; préfixes [player] [console] [close]), show (always | has-next | has-prev)
+  items:
     prev:
+      slot: -9
       item: ARROW
       name: "<yellow>« Page précédente"
+      action: prev-page
     next:
+      slot: -1
       item: ARROW
       name: "<yellow>Page suivante »"
+      action: next-page
     close:
+      slot: -5
       item: BARRIER
       name: "<red>Fermer"
+      action: close
